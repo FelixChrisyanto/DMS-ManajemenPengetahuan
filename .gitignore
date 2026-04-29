@@ -1,0 +1,14 @@
+# SQLite Database
+# Hapus tanda # di bawah jika tidak ingin database di-upload ke GitHub
+database.sqlite
+
+# Uploads
+uploads/
+img/goods_*
+
+# Vendors / External Libraries
+includes/dompdf/
+
+# OS specific files
+.DS_Store
+Thumbs.db
