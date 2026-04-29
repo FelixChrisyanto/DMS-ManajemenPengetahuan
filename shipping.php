@@ -3,16 +3,7 @@ require_once 'includes/db.php';
 require_once 'includes/wa_helper.php';
 require_once 'includes/generate_pdf.php';
 
-// Auto-migration for Quantity & Unit columns (Modified for SQLite)
-try {
-    $pdo->exec("ALTER TABLE shipments ADD COLUMN quantity INTEGER DEFAULT 1");
-} catch (Exception $e) {}
-try {
-    $pdo->exec("ALTER TABLE shipment_items ADD COLUMN unit TEXT DEFAULT 'Koli'");
-} catch (Exception $e) {}
-try {
-    $pdo->exec("ALTER TABLE shipment_items ADD COLUMN weight_kg DECIMAL(10,2) DEFAULT 0");
-} catch (Exception $e) {}
+// Database connection is now MySQL. Migration should be done via schema.sql import.
 
 $message = "";
 
@@ -297,7 +288,7 @@ include 'includes/sidebar.php';
 // Fetch Data
 $stmt = $pdo->query("SELECT s.*, r.origin, r.destination, ts.train_name, ts.capacity_kg,
                     (SELECT COALESCE(SUM(weight_kg), 0) FROM shipments s2 WHERE s2.train_id = s.train_id AND LOWER(TRIM(s2.status)) != 'arrived' AND s2.deleted_at IS NULL) as used_kg,
-                    (SELECT GROUP_CONCAT(quantity || ' ' || unit || ' ' || item_name, ', ') FROM shipment_items WHERE shipment_id = s.id) as item_list
+                    (SELECT GROUP_CONCAT(CONCAT(quantity, ' ', unit, ' ', item_name) SEPARATOR ', ') FROM shipment_items WHERE shipment_id = s.id) as item_list
                     FROM shipments s 
                     JOIN routes r ON s.route_id = r.id 
                     LEFT JOIN train_schedules ts ON s.train_id = ts.id 

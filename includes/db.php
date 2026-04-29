@@ -3,38 +3,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 // includes/db.php
-// Centralized SQLite database connection for PT Lintas Nusantara Ekspedisi DMS
+// MySQL database connection for PT Lintas Nusantara Ekspedisi DMS
+// Optimized for hosting compatibility (e.g., InfinityFree)
 
-$db_file = __DIR__ . '/../database.sqlite';
-$schema_file = __DIR__ . '/../sqlite_schema.sql';
+$db_host = 'localhost';
+$db_name = 'dms_logistik';
+$db_user = 'root';
+$db_pass = ''; // Leave empty for Laragon default
 
 try {
-    $first_time = !file_exists($db_file);
-    
-    $dsn = "sqlite:$db_file";
+    $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
 
-    $pdo = new PDO($dsn, null, null, $options);
+    $pdo = new PDO($dsn, $db_user, $db_pass, $options);
     
-    // Enable Foreign Keys in SQLite
-    $pdo->exec("PRAGMA foreign_keys = ON;");
-
-    // Auto-initialize if database file is new
-    if ($first_time && file_exists($schema_file)) {
-        $sql = file_get_contents($schema_file);
-        $pdo->exec($sql);
-    } else {
-        // One-time patch for missing columns if database already exists
-        try {
-            $pdo->exec("ALTER TABLE documents ADD COLUMN reference_resi TEXT NULL");
-        } catch (Exception $e) {}
-    }
-
 } catch (\PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+    // If the database doesn't exist, try to connect without dbname first to create it (optional)
+    // For now, just die with a clear message.
+    die("Connection failed: " . $e->getMessage() . ". Make sure to import schema.sql into your MySQL database.");
 }
 ?>

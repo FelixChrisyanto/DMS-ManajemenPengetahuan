@@ -10,7 +10,7 @@ try {
     $totalDocs = $stmt->fetchColumn();
 
     // Today's Shipments
-    $stmt = $pdo->query("SELECT COUNT(*) FROM shipments WHERE date(created_at) = date('now') AND deleted_at IS NULL");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM shipments WHERE DATE(created_at) = CURDATE() AND deleted_at IS NULL");
     $todayShipments = $stmt->fetchColumn();
 
     // Active Trains (Simple count from train_schedules)
@@ -35,11 +35,11 @@ try {
 
     // Fetch Chart Data: Total Weight per Week for Current Month
     $stmt = $pdo->query("SELECT 
-                            (CAST(strftime('%d', created_at) AS INTEGER) - 1) / 7 + 1 AS week_number,
+                            (DAY(created_at) - 1) DIV 7 + 1 AS week_number,
                             SUM(weight_kg) as total_weight
                         FROM shipments
-                        WHERE strftime('%m', created_at) = strftime('%m', 'now')
-                          AND strftime('%Y', created_at) = strftime('%Y', 'now')
+                        WHERE MONTH(created_at) = MONTH(NOW())
+                          AND YEAR(created_at) = YEAR(NOW())
                           AND deleted_at IS NULL
                         GROUP BY week_number
                         ORDER BY week_number");
